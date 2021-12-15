@@ -674,7 +674,41 @@ function gameLoop(pacman, ghosts) {
   ghosts.forEach(function (ghost) {
     return gameBoard.moveCharacter(ghost);
   });
-  checkCollision(pacman, ghosts);
+  checkCollision(pacman, ghosts); // check if pacman eats a dot
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.DOT)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.DOT]);
+    gameBoard.dotCount--;
+    score += 10;
+  } // check if pacman eats a powerPill
+
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.PILL)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.PILL]);
+    pacman.powerPill = true;
+    score += 50;
+    clearTimeout(powerPillTimer);
+    powerPillTimer = setTimeout(function () {
+      return pacman.powerPill = false;
+    }, POWER_PILL_TIME);
+  } // change ghose scare mode depending on powerpill
+
+
+  if (pacman.powerPill !== powerPillActive) {
+    powerPillActive = pacman.powerPill;
+    ghosts.forEach(function (ghost) {
+      return ghost.isScared = pacman.powerPill;
+    });
+  } // check if all dots have been eaten
+
+
+  if (gameBoard.dotCount === 0) {
+    gameWin = true;
+    gameOver(pacman, ghosts);
+  } // show the score
+
+
+  scoreTable.innerHTML = score;
 }
 
 function startGame() {
