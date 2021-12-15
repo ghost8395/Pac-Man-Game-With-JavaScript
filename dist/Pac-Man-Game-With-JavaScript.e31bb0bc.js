@@ -606,7 +606,17 @@ var Ghost = /*#__PURE__*/function () {
 
 var _default = Ghost;
 exports.default = _default;
-},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js","./ghostMoves":"ghostMoves.js"}],"index.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js","./ghostMoves":"ghostMoves.js"}],"sounds/munch.wav":[function(require,module,exports) {
+module.exports = "/munch.50161df6.wav";
+},{}],"sounds/pill.wav":[function(require,module,exports) {
+module.exports = "/pill.d5173a33.wav";
+},{}],"sounds/game_start.wav":[function(require,module,exports) {
+module.exports = "/game_start.09b402f7.wav";
+},{}],"sounds/death.wav":[function(require,module,exports) {
+module.exports = "/death.1b6386ba.wav";
+},{}],"sounds/eat_Ghost.wav":[function(require,module,exports) {
+module.exports = "/eat_Ghost.0fb5db99.wav";
+},{}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _setup = require("./setup");
@@ -618,6 +628,16 @@ var _Pacman = _interopRequireDefault(require("./Pacman"));
 var _Ghost = _interopRequireDefault(require("./Ghost"));
 
 var _ghostMoves = _interopRequireDefault(require("./ghostMoves"));
+
+var _munch = _interopRequireDefault(require("./sounds/munch.wav"));
+
+var _pill = _interopRequireDefault(require("./sounds/pill.wav"));
+
+var _game_start = _interopRequireDefault(require("./sounds/game_start.wav"));
+
+var _death = _interopRequireDefault(require("./sounds/death.wav"));
+
+var _eat_Ghost = _interopRequireDefault(require("./sounds/eat_Ghost.wav"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -637,9 +657,15 @@ var score = 0;
 var timer = null;
 var gameWin = false;
 var powerPillActive = false;
-var powerPillTimer = null;
+var powerPillTimer = null; // Audio
+
+function playAudio(audio) {
+  var soundEffect = new Audio(audio);
+  soundEffect.play();
+}
 
 function gameOver(pacman, grid) {
+  playAudio(_death.default);
   document.removeEventListener("keydown", function (e) {
     return pacman.handleKeyInput(e, gameBoard.objectExist);
   });
@@ -655,8 +681,14 @@ function checkCollision(pacman, ghosts) {
 
   if (collideGhost) {
     if (pacman.powerPill) {
-      gameBoard.removeObject(collideGhost.pos, [_setup.OBJECT_TYPE.GHOST, _setup.OBJECT_TYPE.SCARED, collideGhost.name]);
-      collideGhost.pos = collideGhost.startPos;
+      playAudio(_eat_Ghost.default);
+      ghosts.forEach(function (ghost, i) {
+        if (collideGhost.name === ghost.name) {
+          gameBoard.removeObject(collideGhost.pos, [_setup.OBJECT_TYPE.GHOST, _setup.OBJECT_TYPE.SCARED, ghost.name]); // reset the ghost to start position
+
+          ghost.pos = ghost.startPos;
+        }
+      });
       score += 100;
     } else {
       gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.pacman]);
@@ -677,6 +709,7 @@ function gameLoop(pacman, ghosts) {
   checkCollision(pacman, ghosts); // check if pacman eats a dot
 
   if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.DOT)) {
+    playAudio(_munch.default);
     gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.DOT]);
     gameBoard.dotCount--;
     score += 10;
@@ -684,6 +717,7 @@ function gameLoop(pacman, ghosts) {
 
 
   if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.PILL)) {
+    playAudio(_pill.default);
     gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.PILL]);
     pacman.powerPill = true;
     score += 50;
@@ -712,6 +746,7 @@ function gameLoop(pacman, ghosts) {
 }
 
 function startGame() {
+  playAudio(_game_start.default);
   gameWin = false;
   powerPillActive = false;
   score = 0;
@@ -730,7 +765,7 @@ function startGame() {
 
 
 startButton.addEventListener("click", startGame);
-},{"./setup":"setup.js","./GameBoard":"GameBoard.js","./Pacman":"Pacman.js","./Ghost":"Ghost.js","./ghostMoves":"ghostMoves.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./setup":"setup.js","./GameBoard":"GameBoard.js","./Pacman":"Pacman.js","./Ghost":"Ghost.js","./ghostMoves":"ghostMoves.js","./sounds/munch.wav":"sounds/munch.wav","./sounds/pill.wav":"sounds/pill.wav","./sounds/game_start.wav":"sounds/game_start.wav","./sounds/death.wav":"sounds/death.wav","./sounds/eat_Ghost.wav":"sounds/eat_Ghost.wav"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
