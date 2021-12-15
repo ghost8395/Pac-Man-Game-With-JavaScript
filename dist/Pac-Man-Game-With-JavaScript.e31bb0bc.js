@@ -490,7 +490,123 @@ var Pacman = /*#__PURE__*/function () {
 
 var _default = Pacman;
 exports.default = _default;
-},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js"}],"index.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js"}],"ghostMoves.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = randomMovement;
+
+var _setup = require("./setup");
+
+// Primitive random movement
+function randomMovement(position, direction, objectExist) {
+  var dir = direction;
+  var nextMovePos = position + dir.movement; // create an array from th directions object keys
+
+  var keys = Object.keys(_setup.DIRECTIONS);
+
+  while (objectExist(nextMovePos, _setup.OBJECT_TYPE.WALL) || objectExist(nextMovePos, _setup.OBJECT_TYPE.GHOST)) {
+    var key = keys[Math.floor(Math.random() * keys.length)]; // set the next move
+
+    dir = _setup.DIRECTIONS[key]; // set the next move
+
+    nextMovePos = position + dir.movement;
+  }
+
+  return {
+    nextMovePos: nextMovePos,
+    direction: dir
+  };
+}
+},{"./setup":"setup.js"}],"Ghost.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
+var _setup = require("./setup");
+
+var _ghostMoves = _interopRequireDefault(require("./ghostMoves"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Ghost = /*#__PURE__*/function () {
+  function Ghost() {
+    var speed = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
+    var startPos = arguments.length > 1 ? arguments[1] : undefined;
+    var movement = arguments.length > 2 ? arguments[2] : undefined;
+    var name = arguments.length > 3 ? arguments[3] : undefined;
+    (0, _classCallCheck2.default)(this, Ghost);
+    this.name = name;
+    this.movement = movement;
+    this.startPos = startPos;
+    this.pos = startPos;
+    this.dir = _setup.DIRECTIONS.ArrowRight;
+    this.speed = speed;
+    this.timer = 0;
+    this.isScared = false;
+    this.rotation = false;
+  }
+
+  (0, _createClass2.default)(Ghost, [{
+    key: "shouldMove",
+    value: function shouldMove() {
+      if (this.timer === this.speed) {
+        this.timer = 0;
+        return true;
+      }
+
+      this.timer++;
+      return false;
+    }
+  }, {
+    key: "getNextMove",
+    value: function getNextMove(objectExist) {
+      var _this$movement = this.movement(this.pos, this.dir, objectExist),
+          nextMovePos = _this$movement.nextMovePos,
+          direction = _this$movement.direction;
+
+      return {
+        nextMovePos: nextMovePos,
+        direction: direction
+      };
+    }
+  }, {
+    key: "makeMove",
+    value: function makeMove() {
+      var classesToRemove = [_setup.OBJECT_TYPE.GHOST, _setup.OBJECT_TYPE.SCARED, this.name];
+      var classesToAdd = [_setup.OBJECT_TYPE.GHOST, this.name];
+
+      if (this.isScared) {
+        classesToAdd.push(_setup.OBJECT_TYPE.SCARED);
+      }
+
+      return {
+        classesToRemove: classesToRemove,
+        classesToAdd: classesToAdd
+      };
+    }
+  }, {
+    key: "setNewPos",
+    value: function setNewPos(nextMovePos, direction) {
+      this.pos = nextMovePos;
+      this.dir = direction;
+    }
+  }]);
+  return Ghost;
+}();
+
+var _default = Ghost;
+exports.default = _default;
+},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js","./ghostMoves":"ghostMoves.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _setup = require("./setup");
@@ -498,6 +614,10 @@ var _setup = require("./setup");
 var _GameBoard = _interopRequireDefault(require("./GameBoard"));
 
 var _Pacman = _interopRequireDefault(require("./Pacman"));
+
+var _Ghost = _interopRequireDefault(require("./Ghost"));
+
+var _ghostMoves = _interopRequireDefault(require("./ghostMoves"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -525,6 +645,9 @@ function checkPosition(pacman, ghosts) {}
 
 function gameLoop(pacman, ghosts) {
   gameBoard.moveCharacter(pacman);
+  ghosts.forEach(function (ghost) {
+    return gameBoard.moveCharacter(ghost);
+  });
 }
 
 function startGame() {
@@ -538,14 +661,15 @@ function startGame() {
   document.addEventListener("keydown", function (e) {
     pacman.handleKeyInput(e, gameBoard.objectExist);
   });
+  var ghosts = [new _Ghost.default(5, 188, _ghostMoves.default, _setup.OBJECT_TYPE.BLINKY), new _Ghost.default(3, 209, _ghostMoves.default, _setup.OBJECT_TYPE.PINKY), new _Ghost.default(3, 230, _ghostMoves.default, _setup.OBJECT_TYPE.INKY), new _Ghost.default(2, 251, _ghostMoves.default, _setup.OBJECT_TYPE.CLYDE)];
   timer = setInterval(function () {
-    return gameLoop(pacman);
+    return gameLoop(pacman, ghosts);
   }, GLOBAL_SPEED);
 } // Initialize game
 
 
 startButton.addEventListener("click", startGame);
-},{"./setup":"setup.js","./GameBoard":"GameBoard.js","./Pacman":"Pacman.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./setup":"setup.js","./GameBoard":"GameBoard.js","./Pacman":"Pacman.js","./Ghost":"Ghost.js","./ghostMoves":"ghostMoves.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
