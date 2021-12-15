@@ -23,7 +23,9 @@ function gameOver(pacman, grid) {}
 
 function checkPosition(pacman, ghosts) {}
 
-function gameloop(pacman, ghosts) {}
+function gameLoop(pacman, ghosts) {
+  gameBoard.moveCharacter(pacman);
+}
 
 function startGame() {
   gameWin = false;
@@ -38,6 +40,8 @@ function startGame() {
   document.addEventListener("keydown", (e) => {
     pacman.handleKeyInput(e, gameBoard.objectExist);
   });
+
+  timer = setInterval(() => gameLoop(pacman), GLOBAL_SPEED);
 }
 
 // Initialize game
