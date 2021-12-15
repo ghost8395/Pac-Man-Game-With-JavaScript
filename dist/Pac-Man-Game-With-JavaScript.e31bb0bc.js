@@ -639,15 +639,42 @@ var gameWin = false;
 var powerPillActive = false;
 var powerPillTimer = null;
 
-function gameOver(pacman, grid) {}
+function gameOver(pacman, grid) {
+  document.removeEventListener("keydown", function (e) {
+    return pacman.handleKeyInput(e, gameBoard.objectExist);
+  });
+  gameBoard.showGameStatus(gameWin);
+  clearInterval(timer);
+  startButton.classList.remove("hide");
+}
+
+function checkCollision(pacman, ghosts) {
+  var collideGhost = ghosts.find(function (ghost) {
+    return pacman.pos === ghost.pos;
+  });
+
+  if (collideGhost) {
+    if (pacman.powerPill) {
+      gameBoard.removeObject(collideGhost.pos, [_setup.OBJECT_TYPE.GHOST, _setup.OBJECT_TYPE.SCARED, collideGhost.name]);
+      collideGhost.pos = collideGhost.startPos;
+      score += 100;
+    } else {
+      gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.pacman]);
+      gameBoard.rotateDiv(pacman.pos, 0);
+      gameOver(pacman, gameGrid);
+    }
+  }
+}
 
 function checkPosition(pacman, ghosts) {}
 
 function gameLoop(pacman, ghosts) {
   gameBoard.moveCharacter(pacman);
+  checkCollision(pacman, ghosts);
   ghosts.forEach(function (ghost) {
     return gameBoard.moveCharacter(ghost);
   });
+  checkCollision(pacman, ghosts);
 }
 
 function startGame() {
